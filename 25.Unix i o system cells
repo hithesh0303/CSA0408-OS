@@ -1,0 +1,33 @@
+#include <stdio.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <string.h>
+
+int main() {
+    int fd = open("sample.txt", O_CREAT|O_RDWR, 0644);
+    write(fd, "Operating Systems\n", 18);
+
+    off_t pos = lseek(fd, 0, SEEK_SET);
+    printf("File offset reset to: %ld\n", pos);
+
+    struct stat st;
+    fstat(fd, &st);
+    printf("File size: %ld bytes\n", st.st_size);
+
+    int flags = fcntl(fd, F_GETFL);
+    printf("File access mode: %d\n", flags & O_ACCMODE);
+
+    close(fd);
+
+    DIR *d = opendir(".");
+    struct dirent *de;
+    printf("Files in current directory:\n");
+    while ((de = readdir(d)) != NULL) {
+        printf("  %s\n", de->d_name);
+    }
+    closedir(d);
+
+    return 0;
+}
