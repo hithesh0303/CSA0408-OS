@@ -1,0 +1,71 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct {
+    int id;
+    char name[50];
+    int age;
+    float salary;
+} Employee;
+
+const char *FNAME = "employees.dat";
+
+void addEmployee() {
+    Employee e;
+    FILE *f = fopen(FNAME,"ab");
+    if(!f) { perror("fopen"); return; }
+    printf("ID: "); scanf("%d",&e.id);
+    printf("Name: "); scanf(" %[^\n]", e.name);
+    printf("Age: "); scanf("%d",&e.age);
+    printf("Salary: "); scanf("%f",&e.salary);
+    fwrite(&e,sizeof(Employee),1,f);
+    fclose(f);
+    printf("Added\n");
+}
+
+void displayAll() {
+    Employee e;
+    FILE *f = fopen(FNAME,"rb");
+    if(!f) { perror("fopen"); return; }
+    int idx=0;
+    while (fread(&e,sizeof(Employee),1,f)==1) {
+        printf("Record %d => ID:%d Name:%s Age:%d Salary:%.2f\n", idx, e.id, e.name, e.age, e.salary);
+        idx++;
+    }
+    fclose(f);
+}
+
+void updateRecord() {
+    int rec;
+    printf("Enter record number to update: "); scanf("%d",&rec);
+    FILE *f = fopen(FNAME,"rb+");
+    if(!f) { perror("fopen"); return; }
+    if (fseek(f, rec * sizeof(Employee), SEEK_SET) != 0) { printf("Invalid record\n"); fclose(f); return; }
+    Employee e;
+    if (fread(&e,sizeof(Employee),1,f)!=1) { printf("No such record\n"); fclose(f); return; }
+    printf("Current -> ID:%d Name:%s Age:%d Salary:%.2f\n", e.id, e.name, e.age, e.salary);
+    printf("Enter new Name: "); scanf(" %[^\n]", e.name);
+    printf("Enter new Age: "); scanf("%d",&e.age);
+    printf("Enter new Salary: "); scanf("%f",&e.salary);
+    fseek(f, rec * sizeof(Employee), SEEK_SET);
+    fwrite(&e,sizeof(Employee),1,f);
+    fclose(f);
+    printf("Updated\n");
+}
+
+int main() {
+    int ch;
+    while (1) {
+        printf("\n1.Add 2.Display 3.Update 4.Exit\nChoice: ");
+        if (scanf("%d",&ch)!=1) break;
+        switch(ch) {
+            case 1: addEmployee(); break;
+            case 2: displayAll(); break;
+            case 3: updateRecord(); break;
+            case 4: exit(0);
+            default: printf("Invalid\n");
+        }
+    }
+    return 0;
+}
