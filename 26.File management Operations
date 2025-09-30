@@ -1,0 +1,22 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+int main() {
+    FILE *fp;
+    char data[100];
+    
+    fp = fopen("file.txt", "w");
+    fprintf(fp, "Hello, File Management in C!\n");
+    fclose(fp);
+
+    fp = fopen("file.txt", "r");
+    while (fgets(data, sizeof(data), fp)) printf("%s", data);
+    fclose(fp);
+
+    if (remove("file.txt") == 0) printf("\nFile deleted successfully.\n");
+    else perror("Error deleting file");
+
+    return 0;
+}
