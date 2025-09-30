@@ -1,0 +1,21 @@
+#include <stdio.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <string.h>
+
+int main() {
+    int fd;
+    char buf[100] = "Hello, this is a test file using UNIX system calls.\n";
+    char readbuf[100];
+
+    fd = open("testfile.txt", O_CREAT|O_RDWR, 0644);
+    write(fd, buf, strlen(buf));
+    lseek(fd, 0, SEEK_SET);
+    int n = read(fd, readbuf, sizeof(readbuf)-1);
+    readbuf[n] = '\0';
+    printf("Data read: %s", readbuf);
+    close(fd);
+
+    unlink("testfile.txt"); // delete file
+    return 0;
+}
