@@ -1,0 +1,56 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <semaphore.h>
+#include <unistd.h>
+
+int readcount = 0;
+sem_t rw_mutex; // controls access to resource
+sem_t mutex;    // for readcount
+
+void *reader(void *arg) {
+    int id = *(int*)arg;
+    while (1) {
+        sem_wait(&mutex);
+        readcount++;
+        if (readcount == 1) sem_wait(&rw_mutex);
+        sem_post(&mutex);
+
+        printf("Reader %d reading\n", id);
+        sleep(1);
+
+        sem_wait(&mutex);
+        readcount--;
+        if (readcount == 0) sem_post(&rw_mutex);
+        sem_post(&mutex);
+
+        sleep(rand()%3 + 1);
+    }
+    return NULL;
+}
+
+void *writer(void *arg) {
+    int id = *(int*)arg;
+    while (1) {
+        sem_wait(&rw_mutex);
+        printf("Writer %d writing\n", id);
+        sleep(2);
+        sem_post(&rw_mutex);
+        sleep(rand()%4 + 1);
+    }
+    return NULL;
+}
+
+int main() {
+    sem_init(&rw_mutex,0,1);
+    sem_init(&mutex,0,1);
+    pthread_t r1,r2,w1;
+    int r1id=1,r2id=2,wid=1;
+    pthread_create(&r1,NULL,reader,&r1id);
+    pthread_create(&r2,NULL,reader,&r2id);
+    pthread_create(&w1,NULL,writer,&wid);
+    pthread_join(r1,NULL);
+    pthread_join(r2,NULL);
+    pthread_join(w1,NULL);
+    return 0;
+}
